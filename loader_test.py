@@ -7,14 +7,14 @@ import pandas as pd
 
 @pytest.fixture
 def sample_dirty_fname() -> str:
-    fname = 'data/sample_dirty.csv'
+    fname = 'sample_dirty.csv'
     return fname
 
 
 def sample_formatted() -> pd.DataFrame:
     # TODO Complete the test case bellow
     df = pd.DataFrame(
-        data=...,
+        data='sample_dirty.csv',
         dtype=...
     )
 
