@@ -28,12 +28,15 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     """ One function to read csv into a dataframe with appropriate types/formats.
         Note: read only pertinent columns, ignore the others.
     """
+    column_names = []
+    column_types = {}
+    
     df = pd.read_csv(
         data_fname,
-        ...
+        usecols=column_names,
+        dtype=column_types
         )
     return df
-
 
 # once they are all done, call them in the general sanitizing function
 def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
