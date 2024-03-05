@@ -28,7 +28,7 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     """ One function to read csv into a dataframe with appropriate types/formats.
         Note: read only pertinent columns, ignore the others.
     """
-    column_names = []
+    column_names = ['nom','acc','acc_acc','acc_complt','acc_etg','acc_lib','acc_pcsec','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
     column_types = {}
     
     df = pd.read_csv(
