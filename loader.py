@@ -5,7 +5,7 @@ import pandas as pd
 
 DATA_PATH = 'data/MMM_MMM_DAE.csv'
 
-def download_data(url, force_download=False, ):
+def download_data(url = DATA_PATH, force_download=False, ):
     # Utility function to donwload data if it is not in disk
     data_path = os.path.join('data', os.path.basename(url.split('?')[0]))
     if not os.path.exists(data_path) or force_download:
@@ -29,11 +29,10 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
         Note: read only pertinent columns, ignore the others.
     """
     # Precision on columns to read. 
-    column_names = ['nom','acc','acc_acc','acc_complt','acc_etg','acc_lib','acc_pcsec','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
+    column_names = ['nom','acc','acc_complt','acc_etg','acc_lib','acc_pcsec','adr_num','adr_voie','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
     # Precisions on column's dtypes. 
     column_types = {'nom':'object',
                     'acc':'object',
-                    'acc_acc':'bool',
                     'acc_complt':'object',
                     'acc_etg':'int64',
                     'acc_lib':'bool',
@@ -57,13 +56,18 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
                     'tel1':'object',
                     } 
     # We define dates as object because it must be readable by human, we don't use it as a datetime64.  
-    
+    #df.replace(" ", pd.NA, inplace=True)
     df = pd.read_csv(
         data_fname,
         usecols=column_names,
-        dtype=column_types,
+        #dtype=column_types,
         encoding='utf-8'
         )
+    df['acc_etg'].replace(0, "RDC", inplace=True)
+    print(df['acc_acc'])
+    df['acc_etg'].rename('etage')
+    df['acc'].rename('Interieur')
+    
     
 
     return df
@@ -80,17 +84,17 @@ def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
         if df[col].dtype == 'bool':
             df[col].fillna(False, inplace=True)
         else:
-            df[col].fillna("NA", inplace=True)
+            df[col].fillna(pd.NA, inplace=True)
     
         # Replace "-" with "NA"
-    df.replace("-", "NA", inplace=True)
+    df.replace("-", pd.NA, inplace=True)
         # Convert string columns to lower case
     df = df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
 
     specific_column = 'tel1'
     if specific_column in df.columns:
         df[specific_column] = df[specific_column].str.replace('+', '')
-
+        df[specific_column] = df[specific_column].str.replace('33', '0')
     return df
 
 # Define a framing function
@@ -99,22 +103,24 @@ def frame_data(df:pd.DataFrame) -> pd.DataFrame:
     df.rename(columns={'old': 'new'}, inplace=True)
 
     # Merge columns adr_num and adr_voie
+    df['adr_num'].replace(pd.NA,'', inplace=True)
     df['address'] = df['adr_num'].astype(str) + ' ' + df['adr_voie']
     df.drop(['adr_num', 'adr_voie'], axis=1, inplace=True)
     return df
 
 
 # once they are all done, call them in the general clean loading function
-def load_clean_data(df:pd.DataFrame)-> pd.DataFrame:
+def load_clean_data(data_path:str=DATA_PATH)-> pd.DataFrame:
     """one function to run it all and return a clean dataframe"""
-    df = (df.pipe(load_formatted_data)
+    df = (load_formatted_data(data_path)
           .pipe(sanitize_data)
           .pipe(frame_data)
     )
+    #print(df.to_string(index=False))
     return df
 
 
 # if the module is called, run the main loading function
 if __name__ == '__main__':
-    DATA_PATH = download_data(url='https://github.com/tgimond/data-clean-TP1')
-    print(load_clean_data(download_data(DATA_PATH)))
+    load_clean_data(download_data())
+    #print(load_clean_data(download_data()))
