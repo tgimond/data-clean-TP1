@@ -29,14 +29,12 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
         Note: read only pertinent columns, ignore the others.
     """
     # Precision on columns to read. 
-    column_names = ['nom','acc','acc_complt','acc_etg','acc_lib','acc_pcsec','adr_num','adr_voie','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
+    column_names = ['nom','acc','acc_etg','acc_lib','adr_num','adr_voie','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
     # Precisions on column's dtypes. 
     column_types = {'nom':'object',
                     'acc':'object',
-                    'acc_complt':'object',
                     'acc_etg':'int64',
                     'acc_lib':'bool',
-                    'acc_pcsec':'bool',
                     'appartenan':'object',
                     'date_insta':'object',
                     'dermnt':'object',
@@ -46,8 +44,6 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
                     'dtpr_bat':'object',
                     'dtpr_lcad':'object',
                     'dtpr_lcped':'object',
-                    'freq_mnt':'object',
-                    'id':'int64',
                     'lat_coor1':'float64',
                     'lc_ped':'bool',
                     'long_coor1':'float64',
@@ -64,12 +60,24 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
         encoding='utf-8'
         )
     df['acc_etg'].replace(0, "RDC", inplace=True)
-    print(df['acc_acc'])
-    df['acc_etg'].rename('etage')
+    df['acc_etg'].rename('Etage')
     df['acc'].rename('Interieur')
-    
-    
-
+    df['acc_lib'].rename('Acces_libre')
+    df['appartenan'].rename('Propriétaire')
+    df['date_insta'].rename('Date_instal')
+    df['dermnt'].rename('Derniere_maintenance')
+    df['disp_compl'].rename('Fermeture_occasionel') #cleaner les datas
+    df['disp_h'].rename('Heure_disp')
+    df['disp_j'].rename('Jour_disp')
+    df['dtpr_bat'].rename('Date_péremption_batterie')
+    df['dtpr_lcad'].rename('Date_péremption_elec_adulte')
+    df['dtpr_lcped'].rename('Date_péremption_elec_pédiatrique')
+    df['lc_ped'].rename('Electrode_enfant')
+    df['lat_coor1'].rename('Latitude')
+    df['long_coor1'].rename('Longitude')
+    df['num_serie'].rename('Num_serie')
+    df['ref'].rename('Référent')
+    df['tel1'].rename('Tel')
     return df
 
 
