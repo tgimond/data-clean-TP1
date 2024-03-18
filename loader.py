@@ -99,10 +99,9 @@ def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
         # Convert string columns to lower case
     df = df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
 
-    specific_column = 'tel1'
+    specific_column = 'Tel'
     if specific_column in df.columns:
         df[specific_column] = df[specific_column].str.replace('+', '')
-        df[specific_column] = df[specific_column].str.replace('33', '0')
     return df
 
 # Define a framing function
