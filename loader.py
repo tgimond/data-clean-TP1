@@ -3,7 +3,7 @@ import requests
 import numpy as np
 import pandas as pd
 
-DATA_PATH = 'MMM_MMM_DAE.csv'
+DATA_PATH = 'data/MMM_MMM_DAE.csv'
 
 def download_data(url, force_download=False, ):
     # Utility function to donwload data if it is not in disk
@@ -31,7 +31,9 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     # Precision on columns to read. 
     column_names = ['nom','acc','acc_acc','acc_complt','acc_etg','acc_lib','acc_pcsec','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
     # Precisions on column's dtypes. 
-    column_types = {'nom':'object','acc':'object','acc_acc':'bool','acc_complt':'object','acc_etg':'int64','acc_lib':'bool','acc_pcsec':'bool','appartenan':'object','date_insta':'object','dermnt':'object','disp_compl':'object','disp_h':'object','disp_j':'object','dtpr_bat':'object','dtpr_lcad':'object','dtpr_lcped':'object','freq_mnt':'object','id':'int64','lat_coor1':'float64','lc_ped':'bool','long_coor1':'float64','num_serie':'object','ref':'object','tel1':'object'} # We define dates as object because it must be readable by human, we don't use it as a datetime64. 
+    column_types = {'nom':'object','acc':'object','acc_acc':'bool','acc_complt':'object','acc_etg':'int64','acc_lib':'bool','acc_pcsec':'bool','appartenan':'object','date_insta':'object','dermnt':'object','disp_compl':'object','disp_h':'object','disp_j':'object','dtpr_bat':'object','dtpr_lcad':'object','dtpr_lcped':'object','freq_mnt':'object','id':'int64','lat_coor1':'float64','lc_ped':'bool','long_coor1':'float64','num_serie':'object','ref':'object','tel1':'object'} 
+    # We define dates as object because it must be readable by human, we don't use it as a datetime64.  
+    
     df = pd.read_csv(
         data_fname,
         usecols=column_names,
@@ -39,10 +41,29 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
         )
     return df
 
+
+
 # once they are all done, call them in the general sanitizing function
 def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
     """ One function to do all sanitizing"""
-    ...
+        # Remove duplicate rows
+    df.drop_duplicates(inplace=True)
+        # Replace missing values based on data type
+    for col in df.columns:
+        if df[col].dtype == 'bool':
+            df[col].fillna(False, inplace=True)
+        else:
+            df[col].fillna("NA", inplace=True)
+    
+        # Replace "-" with "NA"
+    df.replace("-", "NA", inplace=True)
+        # Convert string columns to lower case
+    df = df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
+
+    specific_column = 'tel1'
+    if specific_column in df.columns:
+        df[specific_column] = df[specific_column].str.replace('+', '')
+
     return df
 
 # Define a framing function
