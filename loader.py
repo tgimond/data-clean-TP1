@@ -31,14 +31,41 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     # Precision on columns to read. 
     column_names = ['nom','acc','acc_acc','acc_complt','acc_etg','acc_lib','acc_pcsec','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
     # Precisions on column's dtypes. 
-    column_types = {'nom':'object','acc':'object','acc_acc':'bool','acc_complt':'object','acc_etg':'int64','acc_lib':'bool','acc_pcsec':'bool','appartenan':'object','date_insta':'object','dermnt':'object','disp_compl':'object','disp_h':'object','disp_j':'object','dtpr_bat':'object','dtpr_lcad':'object','dtpr_lcped':'object','freq_mnt':'object','id':'int64','lat_coor1':'float64','lc_ped':'bool','long_coor1':'float64','num_serie':'object','ref':'object','tel1':'object'} 
+    column_types = {'nom':'object',
+                    'acc':'object',
+                    'acc_acc':'bool',
+                    'acc_complt':'object',
+                    'acc_etg':'int64',
+                    'acc_lib':'bool',
+                    'acc_pcsec':'bool',
+                    'appartenan':'object',
+                    'date_insta':'object',
+                    'dermnt':'object',
+                    'disp_compl':'object',
+                    'disp_h':'object',
+                    'disp_j':'object',
+                    'dtpr_bat':'object',
+                    'dtpr_lcad':'object',
+                    'dtpr_lcped':'object',
+                    'freq_mnt':'object',
+                    'id':'int64',
+                    'lat_coor1':'float64',
+                    'lc_ped':'bool',
+                    'long_coor1':'float64',
+                    'num_serie':'object',
+                    'ref':'object',
+                    'tel1':'object',
+                    } 
     # We define dates as object because it must be readable by human, we don't use it as a datetime64.  
     
     df = pd.read_csv(
         data_fname,
         usecols=column_names,
-        dtype=column_types
+        dtype=column_types,
+        encoding='utf-8'
         )
+    
+
     return df
 
 
