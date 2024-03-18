@@ -7,7 +7,7 @@ import pandas as pd
 
 @pytest.fixture
 def sample_dirty_fname() -> str:
-    fname = 'sample_dirty.csv'
+    fname = 'data-clean-TP1/sample_dirty.csv'
     return fname
 
 

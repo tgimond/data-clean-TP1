@@ -3,7 +3,7 @@ import requests
 import numpy as np
 import pandas as pd
 
-DATA_PATH = 'C:/Users/theog/Desktop/4A/Data cleanning/MMM_MMM_DAE.csv'
+DATA_PATH = 'MMM_MMM_DAE.csv'
 
 def download_data(url, force_download=False, ):
     # Utility function to donwload data if it is not in disk
@@ -31,8 +31,7 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     # Precision on columns to read. 
     column_names = ['nom','acc','acc_acc','acc_complt','acc_etg','acc_lib','acc_pcsec','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
     # Precisions on column's dtypes. 
-    column_types = {'nom':'object','acc':'object','acc_acc':'bool','acc_complt':'object','acc_etg':'int64','acc_lib':'bool','acc_pcsec':'bool','appartenan':'object','date_insta':'object','dermnt':'object','disp_compl':'object','disp_h':'object','disp_j':'object','dtpr_bat':'object','dtpr_lcad':'object','dtpr_lcped':'object','freq_mnt':'object','id':'int64','lat_coor1':'float64','lc_ped':'bool','long_coor1':'float64','num_serie':'object','ref':'object','tel1':'object'} # We define dates as object because it must be readable by human, we don't use it as a datetime64.  
-    
+    column_types = {'nom':'object','acc':'object','acc_acc':'bool','acc_complt':'object','acc_etg':'int64','acc_lib':'bool','acc_pcsec':'bool','appartenan':'object','date_insta':'object','dermnt':'object','disp_compl':'object','disp_h':'object','disp_j':'object','dtpr_bat':'object','dtpr_lcad':'object','dtpr_lcped':'object','freq_mnt':'object','id':'int64','lat_coor1':'float64','lc_ped':'bool','long_coor1':'float64','num_serie':'object','ref':'object','tel1':'object'} # We define dates as object because it must be readable by human, we don't use it as a datetime64. 
     df = pd.read_csv(
         data_fname,
         usecols=column_names,
@@ -46,14 +45,14 @@ def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
     ...
     return df
 
-
 # Define a framing function
 def frame_data(df:pd.DataFrame) -> pd.DataFrame:
     """ One function all framing (column renaming, column merge)"""
-    df.rename(
-        columns={'old':'new'}, 
-        inplace=True
-        )
+    df.rename(columns={'old': 'new'}, inplace=True)
+
+    # Merge columns adr_num and adr_voie
+    df['address'] = df['adr_num'].astype(str) + ' ' + df['adr_voie']
+    df.drop(['adr_num', 'adr_voie'], axis=1, inplace=True)
     return df
 
 
@@ -69,4 +68,5 @@ def load_clean_data(df:pd.DataFrame)-> pd.DataFrame:
 
 # if the module is called, run the main loading function
 if __name__ == '__main__':
-    load_clean_data(download_data())
+    DATA_PATH = download_data(url='https://github.com/tgimond/data-clean-TP1')
+    print(load_clean_data(download_data(DATA_PATH)))
