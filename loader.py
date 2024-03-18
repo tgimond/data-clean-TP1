@@ -3,7 +3,7 @@ import requests
 import numpy as np
 import pandas as pd
 
-DATA_PATH = 'data/MMM_MMM_DAE.csv'
+DATA_PATH = 'C:/Users/theog/Desktop/4A/Data cleanning/MMM_MMM_DAE.csv'
 
 def download_data(url, force_download=False, ):
     # Utility function to donwload data if it is not in disk
@@ -28,8 +28,10 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     """ One function to read csv into a dataframe with appropriate types/formats.
         Note: read only pertinent columns, ignore the others.
     """
+    # Precision on columns to read. 
     column_names = ['nom','acc','acc_acc','acc_complt','acc_etg','acc_lib','acc_pcsec','appartenan','date_insta','dermnt','disp_compl','disp_h','disp_j','dtpr_bat','dtpr_lcad','dtpr_lcped','freq_mnt','id','lat_coor1','lc_ped','long_coor1','num_serie','ref','tel1']
-    column_types = {}
+    # Precisions on column's dtypes. 
+    column_types = {'nom':'object','acc':'object','acc_acc':'bool','acc_complt':'object','acc_etg':'int64','acc_lib':'bool','acc_pcsec':'bool','appartenan':'object','date_insta':'object','dermnt':'object','disp_compl':'object','disp_h':'object','disp_j':'object','dtpr_bat':'object','dtpr_lcad':'object','dtpr_lcped':'object','freq_mnt':'object','id':'int64','lat_coor1':'float64','lc_ped':'bool','long_coor1':'float64','num_serie':'object','ref':'object','tel1':'object'} # We define dates as object because it must be readable by human, we don't use it as a datetime64.  
     
     df = pd.read_csv(
         data_fname,
@@ -48,8 +50,10 @@ def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
 # Define a framing function
 def frame_data(df:pd.DataFrame) -> pd.DataFrame:
     """ One function all framing (column renaming, column merge)"""
-    df.rename(...)
-    ...
+    df.rename(
+        columns={'old':'new'}, 
+        inplace=True
+        )
     return df
 
 
