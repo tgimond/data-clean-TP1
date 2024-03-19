@@ -59,7 +59,6 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
         dtype=column_types,
         encoding='utf-8'
         )
-    df['acc_etg'].replace(0, "RDC", inplace=True)
     df.rename(columns={
         'nom': 'Nom',
         'acc_etg': 'Etage',
@@ -81,7 +80,7 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
         'ref': 'Référent',
         'tel1': 'Tel'
     }, inplace=True)
-    print(df.columns)
+    #print(df.columns)
     return df
 
 
@@ -111,13 +110,50 @@ def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
     # Formater la colonne 'dates' dans le format souhaité
     df['Date_péremption_batterie'] = df['Date_péremption_batterie'].dt.strftime('%Y-%m-%d')
 
-    df['Date_péremption_batterie'].replace('nan', pd.NA)
+    df['Date_instal'] = pd.to_datetime(df['Date_instal'])
+    df['Date_instal'] = df['Date_instal'].dt.strftime('%Y-%m-%d')
+
+    df['Date_péremption_elec_adulte'] = pd.to_datetime(df['Date_péremption_elec_adulte'])
+    df['Date_péremption_elec_adulte'] = df['Date_péremption_elec_adulte'].dt.strftime('%Y-%m-%d')
+
+    df['Date_péremption_elec_pédiatrique'] = pd.to_datetime(df['Date_péremption_elec_pédiatrique'])
+    df['Date_péremption_elec_pédiatrique'] = df['Date_péremption_elec_pédiatrique'].dt.strftime('%Y-%m-%d')
+    
+    df['Etage'].replace(0, "RDC", inplace=True)
+
+    # Supprimer la ligne "tous les ans" de la colonne "Derniere_maintenance"
+    df = df[df['Derniere_maintenance'] != 'tous les ans']
+    df['Derniere_maintenance'] = pd.to_datetime(df['Derniere_maintenance'])
+    df['Derniere_maintenance'] = df['Derniere_maintenance'].dt.strftime('%Y-%m-%d')
+
+    df['Nom'].replace("- "," - ")
+    df['Nom'].replace(" -"," - ")
+
+    df['Acces_libre']=df['Acces_libre'].replace({'oui':True,'non':False})
+    df['Acces_libre']=df['Acces_libre'].astype('boolean')
+
+    df['Electrode_enfant'] = df['Electrode_enfant'].replace('2021-08-17', np.nan)
+    df['Electrode_enfant']=df['Electrode_enfant'].replace({'oui':True,'non':False})
+    df['Electrode_enfant']=df['Electrode_enfant'].astype('boolean')
+
+    # Convertir la colonne en numérique en remplaçant les valeurs non numériques par NaN
+    df['Latitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
+    df['Longitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
+    # Convertir la colonne en type float64
+    df['Latitude'] = df['Latitude'].astype('float64')
+    df['Longitude'] = df['Longitude'].astype('float64')
+
     if 'Tel' in df.columns:
         df['Tel'].fillna('', inplace=True)
         df['Tel'] = df['Tel'].str.replace(r'\D', '').str.replace('+', '').str.replace('33', '0').str.replace('  ', ' ').str.replace('\n', ' ')
         df['Tel'] = df['Tel'].str.replace(r'(?<=\d)\s(?=\d)', '')    
         df['Tel'] = df['Tel'].str.rstrip()
         df['Tel'] = np.where(df['Tel'].str.len() != 14, pd.NA, df['Tel'])
+
+    df['Jour_disp']=df['Jour_disp'].replace('lundi, mardi, mercredi, jeudi, vendredi, samedi, dimanche','7j/7')
+
+    df['Num_serie'] = df['Num_serie'].str.upper() #We keep the capitalized letter in the Num_serie
+
     return df
 
 # Define a framing function
@@ -138,7 +174,7 @@ def load_clean_data(data_path:str=DATA_PATH)-> pd.DataFrame:
           .pipe(sanitize_data)
           .pipe(frame_data)
     )
-    for value in df['Date_péremption_batterie']:
+    for value in df['Etage']:
         print(value)
     #print(df.to_string(index=False))
     return df
@@ -147,4 +183,4 @@ def load_clean_data(data_path:str=DATA_PATH)-> pd.DataFrame:
 # if the module is called, run the main loading function
 if __name__ == '__main__':
     load_clean_data(download_data())
-    #print(load_clean_data(download_data()))
+    print(load_clean_data(download_data()))
