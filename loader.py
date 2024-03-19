@@ -34,7 +34,7 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     column_types = {'nom':'object',
                     'acc':'object',
                     'acc_etg':'int64',
-                    'acc_lib':'bool',
+                    'acc_lib':'object',
                     'appartenan':'object',
                     'date_insta':'object',
                     'dermnt':'object',
@@ -44,9 +44,9 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
                     'dtpr_bat':'object',
                     'dtpr_lcad':'object',
                     'dtpr_lcped':'object',
-                    'lat_coor1':'float64',
-                    'lc_ped':'bool',
-                    'long_coor1':'float64',
+                    'lat_coor1':'object',
+                    'lc_ped':'object',
+                    'long_coor1':'object',
                     'num_serie':'object',
                     'ref':'object',
                     'tel1':'object',
@@ -56,28 +56,32 @@ def load_formatted_data(data_fname:str) -> pd.DataFrame:
     df = pd.read_csv(
         data_fname,
         usecols=column_names,
-        #dtype=column_types,
+        dtype=column_types,
         encoding='utf-8'
         )
     df['acc_etg'].replace(0, "RDC", inplace=True)
-    df['acc_etg'].rename('Etage')
-    df['acc'].rename('Interieur')
-    df['acc_lib'].rename('Acces_libre')
-    df['appartenan'].rename('Propriétaire')
-    df['date_insta'].rename('Date_instal')
-    df['dermnt'].rename('Derniere_maintenance')
-    df['disp_compl'].rename('Fermeture_occasionel') #cleaner les datas
-    df['disp_h'].rename('Heure_disp')
-    df['disp_j'].rename('Jour_disp')
-    df['dtpr_bat'].rename('Date_péremption_batterie')
-    df['dtpr_lcad'].rename('Date_péremption_elec_adulte')
-    df['dtpr_lcped'].rename('Date_péremption_elec_pédiatrique')
-    df['lc_ped'].rename('Electrode_enfant')
-    df['lat_coor1'].rename('Latitude')
-    df['long_coor1'].rename('Longitude')
-    df['num_serie'].rename('Num_serie')
-    df['ref'].rename('Référent')
-    df['tel1'].rename('Tel')
+    df.rename(columns={
+        'nom': 'Nom',
+        'acc_etg': 'Etage',
+        'acc': 'Interieur',
+        'acc_lib': 'Acces_libre',
+        'appartenan': 'Propriétaire',
+        'date_insta': 'Date_instal',
+        'dermnt': 'Derniere_maintenance',
+        'disp_compl': 'Fermeture_occasionelle',
+        'disp_h': 'Heure_disp',
+        'disp_j': 'Jour_disp',
+        'dtpr_bat': 'Date_péremption_batterie',
+        'dtpr_lcad': 'Date_péremption_elec_adulte',
+        'dtpr_lcped': 'Date_péremption_elec_pédiatrique',
+        'lc_ped': 'Electrode_enfant',
+        'lat_coor1': 'Latitude',
+        'long_coor1': 'Longitude',
+        'num_serie': 'Num_serie',
+        'ref': 'Référent',
+        'tel1': 'Tel'
+    }, inplace=True)
+    print(df.columns)
     return df
 
 
@@ -96,22 +100,33 @@ def sanitize_data(df:pd.DataFrame) -> pd.DataFrame:
     
         # Replace "-" with "NA"
     df.replace("-", pd.NA, inplace=True)
+    df.replace(" ", pd.NA, inplace=True)
         # Convert string columns to lower case
     df = df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
+    if 'Fermeture_occasionelle' in df.columns:
+        df.replace(r'^ma.*', pd.NA, regex=True, inplace=True)
+    
+    # Convertir la colonne 'dates' en objets datetime
+    df['Date_péremption_batterie'] = pd.to_datetime(df['Date_péremption_batterie'])
+    # Formater la colonne 'dates' dans le format souhaité
+    df['Date_péremption_batterie'] = df['Date_péremption_batterie'].dt.strftime('%Y-%m-%d')
 
-    specific_column = 'Tel'
-    if specific_column in df.columns:
-        df[specific_column] = df[specific_column].str.replace('+', '')
+    df['Date_péremption_batterie'].replace('nan', pd.NA)
+    if 'Tel' in df.columns:
+        df['Tel'].fillna('', inplace=True)
+        df['Tel'] = df['Tel'].str.replace(r'\D', '').str.replace('+', '').str.replace('33', '0').str.replace('  ', ' ').str.replace('\n', ' ')
+        df['Tel'] = df['Tel'].str.replace(r'(?<=\d)\s(?=\d)', '')    
+        df['Tel'] = df['Tel'].str.rstrip()
+        df['Tel'] = np.where(df['Tel'].str.len() != 14, pd.NA, df['Tel'])
     return df
 
 # Define a framing function
 def frame_data(df:pd.DataFrame) -> pd.DataFrame:
     """ One function all framing (column renaming, column merge)"""
-    df.rename(columns={'old': 'new'}, inplace=True)
-
     # Merge columns adr_num and adr_voie
     df['adr_num'].replace(pd.NA,'', inplace=True)
     df['address'] = df['adr_num'].astype(str) + ' ' + df['adr_voie']
+    df['address'] = df['address'].str.split(',').str[0]
     df.drop(['adr_num', 'adr_voie'], axis=1, inplace=True)
     return df
 
@@ -123,6 +138,8 @@ def load_clean_data(data_path:str=DATA_PATH)-> pd.DataFrame:
           .pipe(sanitize_data)
           .pipe(frame_data)
     )
+    for value in df['Date_péremption_batterie']:
+        print(value)
     #print(df.to_string(index=False))
     return df
 
